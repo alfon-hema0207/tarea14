@@ -1,0 +1,62 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5f8fa;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+header {
+    background-color: blueviolet;
+    color: white;
+    padding: 20px;
+}
+
+main article div {
+    display: grid;
+    grid-template-columns: repeat(4, 80px);
+    gap: 5px;
+    justify-content: center;
+    margin: 30px auto;
+    width: fit-content;
+}
+
+main article div button {
+    width: 80px;
+    height: 80px;
+    font-size: 24px;
+    border: 2px solid blueviolet;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+main article div button:hover {
+    background: skyblue;
+}
+
+footer {
+    margin: 20px;
+}
+
+footer button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: blueviolet;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+footer span {
+    margin: 0 15px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+section h2 {
+    margin-top: 30px;
+    color: #333;
+}
