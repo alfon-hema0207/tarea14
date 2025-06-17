@@ -1,99 +1,133 @@
-class Rompecabezas {
-    constructor() {
-        this.botones = document.querySelectorAll('main article div button');
-        this.botonJugar = document.querySelector('footer button');
-        this.movimientosSpan = document.querySelector('footer span:nth-of-type(1)');
-        this.tiempoSpan = document.querySelector('footer span:nth-of-type(2)');
-        this.mensajeFinal = document.querySelector('section h2');
+// Clase que representa una ficha del rompecabezas
+class Ficha {
+  constructor(boton, indice) {
+    this.boton = boton;
+    this.indice = indice;
+  }
 
-        this.tiempo = 0;
-        this.movimientos = 0;
-        this.intervalo = null;
+  obtenerTexto() {
+    return this.boton.textContent;
+  }
 
-        this.botonJugar.addEventListener('click', () => this.iniciarJuego());
-        this.asignarEventos();
-    }
+  establecerTexto(texto) {
+    this.boton.textContent = texto;
+  }
 
-    iniciarJuego() {
-        const numeros = [...Array(15).keys()].map(n => n + 1).concat(['']);
-        do {
-            this.desordenar(numeros);
-        } while (!this.esSolucionable(numeros));
+  estaVacia() {
+    return this.obtenerTexto() === '';
+  }
 
-        this.botones.forEach((btn, i) => {
-            btn.textContent = numeros[i];
-        });
-
-        this.movimientos = 0;
-        this.tiempo = 0;
-        this.actualizarTexto();
-
-        clearInterval(this.intervalo);
-        this.intervalo = setInterval(() => {
-            this.tiempo++;
-            this.actualizarTexto();
-        }, 1000);
-
-        this.mensajeFinal.textContent = 'El juego finalizó en: ';
-    }
-
-    asignarEventos() {
-        this.botones.forEach((btn, i) => {
-            btn.addEventListener('click', () => this.intentarMover(i));
-        });
-    }
-
-    intentarMover(i) {
-        const vacio = [...this.botones].findIndex(btn => btn.textContent === '');
-        if (this.esAdyacente(i, vacio)) {
-            [this.botones[i].textContent, this.botones[vacio].textContent] =
-                [this.botones[vacio].textContent, this.botones[i].textContent];
-            this.movimientos++;
-            this.actualizarTexto();
-            if (this.juegoTerminado()) {
-                clearInterval(this.intervalo);
-                this.mensajeFinal.textContent = `El juego finalizó en: ${this.tiempo} segundos y ${this.movimientos} movimientos`;
-            }
-        }
-    }
-
-    esAdyacente(i, j) {
-        const filaI = Math.floor(i / 4), colI = i % 4;
-        const filaJ = Math.floor(j / 4), colJ = j % 4;
-        return Math.abs(filaI - filaJ) + Math.abs(colI - colJ) === 1;
-    }
-
-    desordenar(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
-
-    esSolucionable(piezas) {
-        const numeros = piezas.filter(x => x !== '').map(Number);
-        let inversiones = 0;
-        for (let i = 0; i < numeros.length - 1; i++) {
-            for (let j = i + 1; j < numeros.length; j++) {
-                if (numeros[i] > numeros[j]) inversiones++;
-            }
-        }
-        const filaVacia = Math.floor(piezas.indexOf('') / 4);
-        return (inversiones + filaVacia) % 2 === 0;
-    }
-
-    juegoTerminado() {
-        for (let i = 0; i < 15; i++) {
-            if (this.botones[i].textContent != i + 1) return false;
-        }
-        return this.botones[15].textContent === '';
-    }
-
-    actualizarTexto() {
-        this.movimientosSpan.textContent = `movimientos: ${this.movimientos}`;
-        this.tiempoSpan.textContent = `Tiempo: ${this.tiempo}`;
-    }
+  intercambiarCon(otraFicha) {
+    const temp = this.obtenerTexto();
+    this.establecerTexto(otraFicha.obtenerTexto());
+    otraFicha.establecerTexto(temp);
+  }
 }
 
-// Esperar a que el DOM esté cargado
-window.addEventListener('DOMContentLoaded', () => new Rompecabezas());
+// Clase que representa el tablero del juego
+class Tablero {
+  constructor(selectorContenedor) {
+    this.contenedor = document.querySelector(selectorContenedor);
+    this.fichas = Array.from(this.contenedor.querySelectorAll('button')).map(
+      (boton, i) => new Ficha(boton, i)
+    );
+    this.indiceVacio = 15;
+  }
+
+  mezclar() {
+    let valores = [...Array(15).keys()].map(n => (n + 1).toString()).concat('');
+    valores = this.revolver(valores);
+
+    this.fichas.forEach((ficha, i) => {
+      ficha.establecerTexto(valores[i]);
+      if (valores[i] === '') this.indiceVacio = i;
+    });
+  }
+
+  revolver(lista) {
+    for (let i = lista.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [lista[i], lista[j]] = [lista[j], lista[i]];
+    }
+    return lista;
+  }
+
+  mover(indice) {
+    const dif = Math.abs(indice - this.indiceVacio);
+    const movValido = (dif === 1 && Math.floor(indice / 4) === Math.floor(this.indiceVacio / 4)) || dif === 4;
+
+    if (movValido) {
+      this.fichas[indice].intercambiarCon(this.fichas[this.indiceVacio]);
+      this.indiceVacio = indice;
+      return true;
+    }
+    return false;
+  }
+
+  estaOrdenado() {
+    for (let i = 0; i < 15; i++) {
+      if (this.fichas[i].obtenerTexto() != i + 1) return false;
+    }
+    return this.fichas[15].estaVacia();
+  }
+}
+
+// Clase que maneja el juego completo
+class Juego {
+  constructor() {
+    this.tablero = new Tablero('article div');
+    this.botonJugar = document.querySelector('footer button');
+    this.spanMovs = document.querySelector('footer span:nth-of-type(1)');
+    this.spanTiempo = document.querySelector('footer span:nth-of-type(2)');
+    this.mensajeFinal = document.querySelector('section');
+    this.movimientos = 0;
+    this.tiempo = 0;
+    this.temporizador = null;
+
+    this.iniciarEventos();
+  }
+
+  iniciarEventos() {
+    this.tablero.fichas.forEach((ficha, i) => {
+      ficha.boton.addEventListener('click', () => this.intentarMover(i));
+    });
+
+    this.botonJugar.addEventListener('click', () => this.iniciarJuego());
+  }
+
+  iniciarJuego() {
+    this.tablero.mezclar();
+    this.movimientos = 0;
+    this.tiempo = 0;
+    this.actualizarInfo();
+    this.mensajeFinal.innerHTML = '<h2>El juego finalizó en: </h2>';
+
+    clearInterval(this.temporizador);
+    this.temporizador = setInterval(() => {
+      this.tiempo++;
+      this.actualizarInfo();
+    }, 1000);
+  }
+
+  intentarMover(indice) {
+    if (this.tablero.mover(indice)) {
+      this.movimientos++;
+      this.actualizarInfo();
+      if (this.tablero.estaOrdenado()) this.terminarJuego();
+    }
+  }
+
+  terminarJuego() {
+    clearInterval(this.temporizador);
+    this.mensajeFinal.innerHTML = `<h2>El juego finalizó en: ${this.tiempo} segundos y ${this.movimientos} movimientos.</h2>`;
+  }
+
+  actualizarInfo() {
+    this.spanMovs.textContent = `movimientos: ${this.movimientos}`;
+    this.spanTiempo.textContent = `Tiempo: ${this.tiempo}`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  new Juego();
+});

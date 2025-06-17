@@ -10,12 +10,17 @@ header {
     background-color: blueviolet;
     color: white;
     padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+main {
+    padding: 20px;
 }
 
 main article div {
     display: grid;
     grid-template-columns: repeat(4, 80px);
-    gap: 5px;
+    gap: 8px;
     justify-content: center;
     margin: 30px auto;
     width: fit-content;
@@ -29,15 +34,28 @@ main article div button {
     border-radius: 10px;
     background: white;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: background 0.2s ease, transform 0.1s ease;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-main article div button:hover {
-    background: skyblue;
+main article div button:hover:not(:empty) {
+    background: #d1e9ff;
+    transform: scale(1.05);
+}
+
+main article div button:empty {
+    background: #eee;
+    cursor: default;
+    border: 2px dashed #ccc;
 }
 
 footer {
-    margin: 20px;
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
 footer button {
@@ -48,15 +66,52 @@ footer button {
     border: none;
     border-radius: 6px;
     cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+footer button:hover {
+    background-color: indigo;
 }
 
 footer span {
-    margin: 0 15px;
     font-weight: bold;
     font-size: 16px;
+    color: #333;
 }
 
 section h2 {
-    margin-top: 30px;
-    color: #333;
+    margin-top: 40px;
+    color: #2e2e2e;
+    font-weight: 500;
+}
+
+.victoria {
+    animation: brillar 0.8s ease-in-out infinite alternate;
+    background-color: #a6e6a1 !important;
+    border-color: #59b759 !important;
+    color: #1a451a !important;
+}
+
+@keyframes brillar {
+    0% { box-shadow: 0 0 5px 2px #a6e6a1; }
+    100% { box-shadow: 0 0 15px 5px #59b759; }
+}
+
+/* Responsive */
+@media screen and (max-width: 500px) {
+    main article div {
+        grid-template-columns: repeat(4, 60px);
+        gap: 6px;
+    }
+
+    main article div button {
+        width: 60px;
+        height: 60px;
+        font-size: 20px;
+    }
+
+    footer {
+        flex-direction: column;
+        gap: 10px;
+    }
 }
